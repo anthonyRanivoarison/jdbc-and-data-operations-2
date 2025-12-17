@@ -14,3 +14,8 @@ insert into "ingredient"(id, name, price, category, id_dish) values
 (4, 'Chocolat', 3000.00, 'OTHER', 4),
 (5, 'Beurre', 2500.00, 'DAIRY', 4);
 
+select setval(pg_get_serial_sequence('dish', 'id'),
+        (select max(id) from "dish"));
+
+select setval(pg_get_serial_sequence('ingredient', 'id'),
+        (select max(id) from "ingredient"));

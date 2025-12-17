@@ -6,7 +6,7 @@ grant connect on database mini_dish_db to mini_dish_db_manager;
 
 \c mini_dish_db;
 
-grant create schema public to mini_dish_db_manager;
+grant create on schema public to mini_dish_db_manager;
 
 alter default privileges in schema public grant select, insert, update, delete on tables to mini_dish_db_manager;
 
