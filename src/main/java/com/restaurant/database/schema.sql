@@ -1,7 +1,7 @@
 \c mini_dish_db;
 
 create type Ingredient_category as enum ('VEGETABLE', 'ANIMAL', 'MARINE', 'DAIRY', 'OTHER');
-create type Dish_type as enum ('START', 'MAIN', 'DESSERT');
+create type Dish_type as enum ('STARTER', 'MAIN', 'DESSERT');
 
 create table "dish" (
     id serial not null primary key,
