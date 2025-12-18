@@ -20,10 +20,8 @@ public class DBConnection {
         }
     }
 
-    public static void closeConnection() {
+    public static void closeConnection(Connection connection) {
         try {
-            var connection = getDBConnection();
-
             if (connection != null && !connection.isClosed()) {
                 connection.close();
             }
