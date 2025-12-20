@@ -9,53 +9,51 @@ import com.restaurant.models.Ingredient;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DataRetriever {
 
     public Dish findDishById(Integer id) {
+        var connection = DBConnection.getDBConnection();
         try {
-            var connection = DBConnection.getDBConnection();
-
-            String query = "SELECT d.id, d.name, d.dish_type, i.id, i.name, i.price, i.category FROM dish d JOIN ingredient i ON d.id = i.id_dish WHERE d.id = ?";
-            PreparedStatement ps = connection.prepareStatement(query);
-
-            ps.setInt(1, id);
-            ResultSet resultSet = ps.executeQuery();
-
+            String dishQuery = "SELECT id, name, dish_type from dish WHERE id = ?";
+            PreparedStatement dishPs = connection.prepareStatement(dishQuery);
+            dishPs.setInt(1, id);
+            ResultSet dishResultSet = dishPs.executeQuery();
             Dish dish = null;
             List<Ingredient> ingredients = new ArrayList<>();
 
-            while (resultSet.next()) {
-                int dishId = resultSet.getInt(1);
-                String dishName = resultSet.getString(2);
-                DishTypeEnum dishType = DishTypeEnum.valueOf(resultSet.getString(3));
+            if (dishResultSet.next()) {
+                dish.setId(dishResultSet.getInt("id"));
+                dish.setName(dishResultSet.getString("name"));
+                dish.setDishType(DishTypeEnum.valueOf(dishResultSet.getString("dish_type")));
+            }
 
-                int ingredientId = resultSet.getInt(4);
-                String ingredientName = resultSet.getString(5);
-                double ingredientPrice = resultSet.getDouble(6);
-                CategoryEnum ingredientCategoryType = CategoryEnum.valueOf(resultSet.getString(7));
-                Dish ingredientDish = new Dish(dishId, dishName, dishType, null);
-
-                Ingredient ingredient = new Ingredient(ingredientId, ingredientName, ingredientPrice, ingredientCategoryType, ingredientDish);
-
+            String ingredientsQuery = "SELECT id, name, price, category from ingredients WHERE id = ?";
+            PreparedStatement ingredientsPs = connection.prepareStatement(ingredientsQuery);
+            ResultSet ingredientsResultSet = ingredientsPs.executeQuery();
+            while (ingredientsResultSet.next()) {
+                Ingredient ingredient = null;
+                ingredient.setId(ingredientsResultSet.getInt("id"));
+                ingredient.setName(ingredientsResultSet.getString("name"));
+                ingredient.setPrice(ingredientsResultSet.getDouble("price"));
+                ingredient.setCategory(CategoryEnum.valueOf(ingredientsResultSet.getString("category")));
                 ingredients.add(ingredient);
-
-                dish = new Dish(dishId, dishName, dishType, ingredients);
             }
 
             return dish;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            DBConnection.closeConnection();
+            DBConnection.closeConnection(connection);
         }
     }
 
     public List<Ingredient> findIngredients(int page, int size) {
+        var connection = DBConnection.getDBConnection();
         try {
-            var connection = DBConnection.getDBConnection();
 
             String query = "SELECT i.id, i.name, i.price, i.category, d.id, d.name, d.dish_type " +
                            "FROM ingredient i " +
@@ -89,32 +87,43 @@ public class DataRetriever {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            DBConnection.closeConnection();
+            DBConnection.closeConnection(connection);
         }
     }
 
     public List<Ingredient> createIngredients(List<Ingredient> newIngredients) {
+        var connection = DBConnection.getDBConnection();
         try {
-            var connection = DBConnection.getDBConnection();
-
-            String query = "INSERT INTO ingredient (name, price, category, id_dish) VALUES (?, ?, ?, ?)";
-            PreparedStatement ps = connection.prepareStatement(query);
-
-            for (Ingredient ingredient : newIngredients) {
-                ps.setString(1, ingredient.getName());
-                ps.setDouble(2, ingredient.getPrice());
-                ps.setString(3, ingredient.getCategory().name());
-                ps.setInt(4, ingredient.getDish().getId());
-                ps.addBatch();
+            String findIngredientQuery = "SELECT name FROM ingredient WHERE name = ?";
+            PreparedStatement findStmt = connection.prepareStatement(findIngredientQuery);
+            for (Ingredient ingredient: newIngredients) {
+                findStmt.setString(1, ingredient.getName());
+                ResultSet rs = findStmt.executeQuery();
+                if (rs.next()) {
+                    throw new Exception("L'ingrédient " + ingredient.getName() + " est deja existant");
+                }
             }
 
-            ps.executeBatch();
+            String query = "INSERT INTO ingredient (name, price, category) VALUES (?, ?, ?)";
+            PreparedStatement insertStmt = connection.prepareStatement(query);
 
+            for (Ingredient ingredient : newIngredients) {
+                insertStmt.setString(1, ingredient.getName());
+                insertStmt.setDouble(2, ingredient.getPrice());
+                insertStmt.setObject(3, ingredient.getCategory().name(), Types.OTHER);
+                insertStmt.addBatch();
+            }
+
+            int[] results = insertStmt.executeBatch();
+
+            if (results.length != newIngredients.size()) {
+                throw new Exception("Tous les ingrédients n'ont pas été créés");
+            }
             return newIngredients;
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            DBConnection.closeConnection();
+            DBConnection.closeConnection(connection);
         }
     }
 
