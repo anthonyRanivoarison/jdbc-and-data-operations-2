@@ -1,7 +1,7 @@
 package com.restaurant.models;
 
 public enum DishTypeEnum {
-    START,
+    STARTER,
     MAIN,
     DESSERT,
 }

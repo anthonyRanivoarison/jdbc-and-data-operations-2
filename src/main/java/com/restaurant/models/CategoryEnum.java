@@ -5,4 +5,5 @@ public enum CategoryEnum {
     ANIMAL,
     DAIRY,
     OTHER,
+    MARINE
 }

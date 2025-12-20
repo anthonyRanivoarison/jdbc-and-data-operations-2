@@ -10,6 +10,10 @@ public class Dish {
     private List<Ingredient> ingredients;
 
     // Constructor
+    public Dish() {
+
+    }
+
     public Dish(int id, String name, DishTypeEnum dishType, List<Ingredient> ingredients) {
         this.id = id;
         this.name = name;
