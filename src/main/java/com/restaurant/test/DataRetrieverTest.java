@@ -31,13 +31,16 @@ public class DataRetrieverTest {
         );
         System.out.println(dataRetriever.createIngredients(ingredients));
 
+        System.out.println("Find dish by ingredient name");
+        System.out.println(dataRetriever.findDishsByIngredientName("eur"));
+
         System.out.println("Save dish");
         var ingredient2 = new Ingredient(6, "Oignon", 5.00, CategoryEnum.VEGETABLE, new Dish());
         var dish = new Dish(5, "Soupe de légumes", DishTypeEnum.STARTER, List.of(ingredient2));
         System.out.println(dataRetriever.saveDish(dish));
 
-        System.out.println("Find dish by ingredient name");
-        System.out.println(dataRetriever.findDishsByIngredientName("eur"));
+        System.out.println("Find ingredients by criteria");
+        System.out.println(dataRetriever.findIngredientsByCriteria("cho", null, "gateau", 1, 1));
 
     }
 
