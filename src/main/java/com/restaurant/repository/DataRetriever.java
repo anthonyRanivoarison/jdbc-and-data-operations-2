@@ -201,35 +201,38 @@ public class DataRetriever {
         var connection = DBConnection.getDBConnection();
         try {
             var query = new StringBuilder("""
-                    SELECT d.id, d.name, i.id, i.name, i.price, i.category FROM ingredient i JOIN dish d ON i.id_dish = d.id
-                    WHERE 1=1
-                    """);
+            SELECT i.id, i.name, i.price, i.category
+            FROM ingredient i
+            JOIN dish d ON i.id_dish = d.id
+            WHERE 1=1
+        """);
 
             if (ingredientName != null) query.append(" AND i.name ILIKE ?");
-            if (category != null) query.append(" AND i.category ILIKE ?");
+            if (category != null) query.append(" AND i.category = ?");
             if (dishName != null) query.append(" AND d.name ILIKE ?");
             query.append(" LIMIT ? OFFSET ?");
 
             PreparedStatement stmt = connection.prepareStatement(query.toString());
             int idx = 1;
             if (ingredientName != null) stmt.setString(idx++, "%" + ingredientName + "%");
-            if (category != null) stmt.setString(idx++, "%" + category + "%");
+            if (category != null) stmt.setString(idx++, category.name());
             if (dishName != null) stmt.setString(idx++, "%" + dishName + "%");
             stmt.setInt(idx++, size);
             stmt.setInt(idx++, (page - 1) * size);
 
             ResultSet rs = stmt.executeQuery();
             List<Ingredient> ingredients = new ArrayList<>();
-            if (rs.next()) {
-                var ingredient = new Ingredient();
-                ingredient.setId(rs.getInt(3));
-                ingredient.setName(rs.getString(4));
-                ingredient.setPrice(rs.getDouble(5));
-                ingredient.setCategory(CategoryEnum.valueOf(rs.getString(6)));
+
+            while (rs.next()) {
+                Ingredient ingredient = new Ingredient();
+                ingredient.setId(rs.getInt("id"));
+                ingredient.setName(rs.getString("name"));
+                ingredient.setPrice(rs.getDouble("price"));
+                ingredient.setCategory(CategoryEnum.valueOf(rs.getString("category")));
+                ingredients.add(ingredient);
             }
             return ingredients;
         } catch (SQLException e) {
-            System.out.println("SQLException Error: " + e.getMessage());
             throw new RuntimeException(e);
         } finally {
             DBConnection.closeConnection(connection);

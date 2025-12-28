@@ -40,7 +40,8 @@ public class DataRetrieverTest {
         System.out.println(dataRetriever.saveDish(dish));
 
         System.out.println("Find ingredients by criteria");
-        System.out.println(dataRetriever.findIngredientsByCriteria("cho", null, "gateau", 1, 1));
+        System.out.println(dataRetriever.findIngredientsByCriteria("cho", null, "sal", 1, 10));
+        System.out.println(dataRetriever.findIngredientsByCriteria("cho", null, "gateau", 1, 10));
 
     }
 
