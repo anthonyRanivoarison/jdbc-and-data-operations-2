@@ -1,5 +1,6 @@
 package com.restaurant.models;
 
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -7,6 +8,7 @@ public class Dish {
     private int id;
     private String name;
     private DishTypeEnum dishType;
+    private Double price;
     private List<Ingredient> ingredients;
 
     // Constructor
@@ -14,11 +16,12 @@ public class Dish {
 
     }
 
-    public Dish(int id, String name, DishTypeEnum dishType, List<Ingredient> ingredients) {
+    public Dish(int id, String name, DishTypeEnum dishType, List<Ingredient> ingredients, Double price) {
         this.id = id;
         this.name = name;
         this.dishType = dishType;
         this.ingredients = ingredients;
+        this.price = price;
     }
 
     // Getter
@@ -28,6 +31,10 @@ public class Dish {
 
     public int getId() {
         return id;
+    }
+
+    public Double getPrice() {
+        return price;
     }
 
     public List<Ingredient> getIngredients() {
@@ -55,6 +62,10 @@ public class Dish {
         this.name = name;
     }
 
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
     // Equals and hash code
     @Override
     public boolean equals(Object o) {
@@ -75,13 +86,21 @@ public class Dish {
                 "dishType=" + dishType +
                 ", id=" + id +
                 ", name='" + name + '\'' +
+                ", price=" + getGrossMargin() +
                 ", ingredients=" + ingredients +
                 '}';
     }
 
-    public Double getDishPrice() {
+    public Double getDishCost() {
         return ingredients.stream()
                 .mapToDouble(Ingredient::getPrice)
                 .sum();
+    }
+
+    public Double getGrossMargin() {
+        if (price == null || price == 0) {
+            throw new IllegalStateException("Pas de valeur pour le prix du plat");
+        }
+        return price - getDishCost();
     }
 }

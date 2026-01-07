@@ -12,34 +12,45 @@ import java.util.List;
 
 public class DataRetriever {
 
-    private DBConnection dbConnection = new DBConnection();
+    private final DBConnection dbConnection = new DBConnection();
 
     public Dish findDishById(Integer id) {
         var connection = dbConnection.getDBConnection();
         try {
-            String dishQuery = "SELECT id, name, dish_type from dish WHERE id = ?";
+            String dishQuery = "SELECT d.id as dishId, d.name as dishName, d.dish_type, d.price as dishPrice, " +
+                    "i.id as ingredientId, i.name as ingredientName, i.price as ingredientPrice, " +
+                    "i.category, i.id_dish " +
+                    "FROM dish d " +
+                    "LEFT JOIN ingredient i ON d.id = i.id_dish " +
+                    "WHERE d.id = ?";
+
             PreparedStatement dishPs = connection.prepareStatement(dishQuery);
             dishPs.setInt(1, id);
             ResultSet dishResultSet = dishPs.executeQuery();
+
             Dish dish = null;
             List<Ingredient> ingredients = new ArrayList<>();
 
-            if (dishResultSet.next()) {
-                dish.setId(dishResultSet.getInt("id"));
-                dish.setName(dishResultSet.getString("name"));
-                dish.setDishType(DishTypeEnum.valueOf(dishResultSet.getString("dish_type")));
+            while (dishResultSet.next()) {
+                if (dish == null) {
+                    dish = new Dish();
+                    dish.setId(dishResultSet.getInt("dishId"));
+                    dish.setName(dishResultSet.getString("dishName"));
+                    dish.setDishType(DishTypeEnum.valueOf(dishResultSet.getString("dish_type")));
+                    dish.setPrice(dishResultSet.getDouble("dishPrice"));
+                }
+
+                Ingredient ingredient = new Ingredient();
+                ingredient.setId(dishResultSet.getInt("ingredientId"));
+                ingredient.setName(dishResultSet.getString("ingredientName"));
+                ingredient.setPrice(dishResultSet.getDouble("ingredientPrice"));
+                ingredient.setCategory(CategoryEnum.valueOf(dishResultSet.getString("category")));
+
+                ingredients.add(ingredient);
             }
 
-            String ingredientsQuery = "SELECT id, name, price, category from ingredients WHERE id = ?";
-            PreparedStatement ingredientsPs = connection.prepareStatement(ingredientsQuery);
-            ResultSet ingredientsResultSet = ingredientsPs.executeQuery();
-            while (ingredientsResultSet.next()) {
-                Ingredient ingredient = null;
-                ingredient.setId(ingredientsResultSet.getInt("id"));
-                ingredient.setName(ingredientsResultSet.getString("name"));
-                ingredient.setPrice(ingredientsResultSet.getDouble("price"));
-                ingredient.setCategory(CategoryEnum.valueOf(ingredientsResultSet.getString("category")));
-                ingredients.add(ingredient);
+            if (dish != null) {
+                dish.setIngredients(ingredients);
             }
 
             return dish;
@@ -54,7 +65,7 @@ public class DataRetriever {
         var connection = dbConnection.getDBConnection();
         try {
 
-            String query = "SELECT i.id, i.name, i.price, i.category, d.id, d.name, d.dish_type " +
+            String query = "SELECT i.id, i.name, i.price, i.category, d.id, d.name, d.dish_type, d.price " +
                            "FROM ingredient i " +
                            "JOIN dish d ON i.id_dish = d.id " +
                            "LIMIT ? OFFSET ?";
@@ -75,7 +86,8 @@ public class DataRetriever {
                 int dishId = resultSet.getInt(5);
                 String dishName = resultSet.getString(6);
                 DishTypeEnum dishType = DishTypeEnum.valueOf(resultSet.getString(7));
-                Dish ingredientDish = new Dish(dishId, dishName, dishType, null);
+                Double dishPrice = resultSet.getDouble(8);
+                Dish ingredientDish = new Dish(dishId, dishName, dishType, null, dishPrice);
 
                 Ingredient ingredient = new Ingredient(ingredientId, ingredientName, ingredientPrice, ingredientCategoryType, ingredientDish);
 
@@ -158,41 +170,67 @@ public class DataRetriever {
     public String saveDish(Dish dishToSave) {
         var connection = dbConnection.getDBConnection();
         try {
-            String isAlreadyInDBQuery = "SELECT name FROM dish WHERE name = ?";
+            String isAlreadyInDBQuery = "SELECT id, name FROM dish WHERE name = ?";
             PreparedStatement isAlreadyInDBPreparedStmt = connection.prepareStatement(isAlreadyInDBQuery);
             isAlreadyInDBPreparedStmt.setString(1, dishToSave.getName());
             ResultSet resultSet = isAlreadyInDBPreparedStmt.executeQuery();
-            if (resultSet.next()) {
-                String updateDishQuery = "UPDATE dish SET id = ?, name = ?, dish_type = ?";
-                PreparedStatement updateDishPreparedStmt = connection.prepareStatement(updateDishQuery);
-                updateDishPreparedStmt.setInt(1, dishToSave.getId());
-                updateDishPreparedStmt.setString(2, dishToSave.getName());
-                updateDishPreparedStmt.setObject(3, dishToSave.getDishType(), Types.OTHER);
 
-                String updateIngredientQuery = "UPDATE ingredient SET id = ?, name = ?, price = ?, category = ? WHERE id = ?";
-                PreparedStatement updateIngredientPreparedStmt = connection.prepareStatement(updateIngredientQuery);
-                for (Ingredient ingredient: dishToSave.getIngredients()) {
-                    updateIngredientPreparedStmt.setInt(1, ingredient.getId());
-                    updateDishPreparedStmt.setString(2, ingredient.getName());
-                    updateIngredientPreparedStmt.setDouble(3, ingredient.getPrice());
-                    updateDishPreparedStmt.setObject(4, ingredient.getCategory(), Types.OTHER);
-                    updateIngredientPreparedStmt.setInt(5, dishToSave.getId());
+            if (resultSet.next()) {
+                int existingDishId = resultSet.getInt("id");
+
+                String updateDishQuery = "UPDATE dish SET name = ?, dish_type = ?, price = ? WHERE id = ?";
+                PreparedStatement updateDishPreparedStmt = connection.prepareStatement(updateDishQuery);
+                updateDishPreparedStmt.setString(1, dishToSave.getName());
+                updateDishPreparedStmt.setObject(2, dishToSave.getDishType().name(), Types.OTHER);
+                updateDishPreparedStmt.setDouble(3, dishToSave.getPrice());
+                updateDishPreparedStmt.setInt(4, existingDishId);
+                updateDishPreparedStmt.executeUpdate();
+
+                String deleteIngredientsQuery = "DELETE FROM ingredient WHERE id_dish = ?";
+                PreparedStatement deleteIngredientsPreparedStmt = connection.prepareStatement(deleteIngredientsQuery);
+                deleteIngredientsPreparedStmt.setInt(1, existingDishId);
+                deleteIngredientsPreparedStmt.executeUpdate();
+
+                String insertIngredientQuery = "INSERT INTO ingredient(name, price, category, id_dish) VALUES (?, ?, ?, ?)";
+                PreparedStatement insertIngredientPreparedStmt = connection.prepareStatement(insertIngredientQuery);
+                for (Ingredient ingredient : dishToSave.getIngredients()) {
+                    insertIngredientPreparedStmt.setString(1, ingredient.getName());
+                    insertIngredientPreparedStmt.setDouble(2, ingredient.getPrice());
+                    insertIngredientPreparedStmt.setObject(3, ingredient.getCategory().name(), Types.OTHER);
+                    insertIngredientPreparedStmt.setInt(4, existingDishId);
+                    insertIngredientPreparedStmt.executeUpdate();
                 }
-                int affectedRows = updateDishPreparedStmt.executeUpdate();
-                return affectedRows > 0 ? "Dish avec les ingrédients mis à jour " + dishToSave.getIngredients().getFirst().getName() : "Aucun dish mis à jour";
+
+                return "Dish '" + dishToSave.getName() + "' mis à jour";
+
+            } else {
+                String insertDishQuery = "INSERT INTO dish(name, dish_type, price) VALUES (?, ?, ?) RETURNING id";
+                PreparedStatement insertDishPreparedStmt = connection.prepareStatement(insertDishQuery);
+                insertDishPreparedStmt.setString(1, dishToSave.getName());
+                insertDishPreparedStmt.setObject(2, dishToSave.getDishType().name(), Types.OTHER);
+                insertDishPreparedStmt.setDouble(3, dishToSave.getPrice());
+
+                ResultSet rs = insertDishPreparedStmt.executeQuery();
+                int newDishId = 0;
+                if (rs.next()) {
+                    newDishId = rs.getInt("id");
+                }
+
+                String insertIngredientQuery = "INSERT INTO ingredient(name, price, category, id_dish) VALUES (?, ?, ?, ?)";
+                PreparedStatement insertIngredientPreparedStmt = connection.prepareStatement(insertIngredientQuery);
+                for (Ingredient ingredient : dishToSave.getIngredients()) {
+                    insertIngredientPreparedStmt.setString(1, ingredient.getName());
+                    insertIngredientPreparedStmt.setDouble(2, ingredient.getPrice());
+                    insertIngredientPreparedStmt.setObject(3, ingredient.getCategory().name(), Types.OTHER);
+                    insertIngredientPreparedStmt.setInt(4, newDishId);
+                    insertIngredientPreparedStmt.executeUpdate();
+                }
+
+                return "Dish '" + dishToSave.getName() + "' créé avec succès";
             }
-            String insertDishQuery = "INSERT INTO dish(id, name, dish_type, ingredients) VALUES (?, ?, ?, ?)";
-            PreparedStatement insertDishPreparedStmt = connection.prepareStatement(insertDishQuery);
-            insertDishPreparedStmt.setInt(1, dishToSave.getId());
-            insertDishPreparedStmt.setString(2, dishToSave.getName());
-            insertDishPreparedStmt.setString(3, String.valueOf(dishToSave.getDishType()));
-            insertDishPreparedStmt.setObject(4, dishToSave.getIngredients());
-            int affectedRows = insertDishPreparedStmt.executeUpdate();
-            return affectedRows > 0 ? "Dish (" + dishToSave.getName() + ") créé avec succès contenant l’ingrédient Oignon" : "Aucun dish mis a jour";
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
-            dbConnection.closeConnection(connection);
         }
     }
 

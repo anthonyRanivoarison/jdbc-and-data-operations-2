@@ -1,0 +1,8 @@
+/home/anthonio/Documents/HEI Ivandry/S3/PROG3/jdbc-and-data-operations-2/src/main/java/com/restaurant/config/DBConnection.java
+/home/anthonio/Documents/HEI Ivandry/S3/PROG3/jdbc-and-data-operations-2/src/main/java/com/restaurant/models/CategoryEnum.java
+/home/anthonio/Documents/HEI Ivandry/S3/PROG3/jdbc-and-data-operations-2/src/main/java/com/restaurant/models/Dish.java
+/home/anthonio/Documents/HEI Ivandry/S3/PROG3/jdbc-and-data-operations-2/src/main/java/com/restaurant/models/DishTypeEnum.java
+/home/anthonio/Documents/HEI Ivandry/S3/PROG3/jdbc-and-data-operations-2/src/main/java/com/restaurant/models/Ingredient.java
+/home/anthonio/Documents/HEI Ivandry/S3/PROG3/jdbc-and-data-operations-2/src/main/java/com/restaurant/repository/DataRetriever.java
+/home/anthonio/Documents/HEI Ivandry/S3/PROG3/jdbc-and-data-operations-2/src/main/java/com/restaurant/test/DataRetrieverTest.java
+/home/anthonio/Documents/HEI Ivandry/S3/PROG3/jdbc-and-data-operations-2/src/main/java/org/example/Main.java
