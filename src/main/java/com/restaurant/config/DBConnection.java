@@ -6,7 +6,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnection {
-    public static Connection getDBConnection() {
+    public Connection getDBConnection() {
         var dotenv = Dotenv.load();
 
         String url = dotenv.get("JDBC_URL");
@@ -20,7 +20,7 @@ public class DBConnection {
         }
     }
 
-    public static void closeConnection(Connection connection) {
+    public void closeConnection(Connection connection) {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();

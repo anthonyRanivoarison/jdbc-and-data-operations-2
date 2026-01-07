@@ -6,17 +6,16 @@ import com.restaurant.models.Dish;
 import com.restaurant.models.DishTypeEnum;
 import com.restaurant.models.Ingredient;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DataRetriever {
 
+    private DBConnection dbConnection = new DBConnection();
+
     public Dish findDishById(Integer id) {
-        var connection = DBConnection.getDBConnection();
+        var connection = dbConnection.getDBConnection();
         try {
             String dishQuery = "SELECT id, name, dish_type from dish WHERE id = ?";
             PreparedStatement dishPs = connection.prepareStatement(dishQuery);
@@ -47,12 +46,12 @@ public class DataRetriever {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            DBConnection.closeConnection(connection);
+            dbConnection.closeConnection(connection);
         }
     }
 
     public List<Ingredient> findIngredients(int page, int size) {
-        var connection = DBConnection.getDBConnection();
+        var connection = dbConnection.getDBConnection();
         try {
 
             String query = "SELECT i.id, i.name, i.price, i.category, d.id, d.name, d.dish_type " +
@@ -87,12 +86,12 @@ public class DataRetriever {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            DBConnection.closeConnection(connection);
+            dbConnection.closeConnection(connection);
         }
     }
 
     public List<Ingredient> createIngredients(List<Ingredient> newIngredients) {
-        var connection = DBConnection.getDBConnection();
+        var connection = dbConnection.getDBConnection();
         try {
             String findIngredientQuery = "SELECT name FROM ingredient WHERE name = ?";
             PreparedStatement findStmt = connection.prepareStatement(findIngredientQuery);
@@ -123,12 +122,12 @@ public class DataRetriever {
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            DBConnection.closeConnection(connection);
+            dbConnection.closeConnection(connection);
         }
     }
 
     public List<Dish> findDishsByIngredientName(String ingredientName) {
-        var connection = DBConnection.getDBConnection();
+        var connection = dbConnection.getDBConnection();
         try {
             String query = """
                     SELECT i.name, i.id_dish, d.id, d.name, d.dish_type FROM ingredient i
@@ -152,12 +151,12 @@ public class DataRetriever {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            DBConnection.closeConnection(connection);
+            dbConnection.closeConnection(connection);
         }
     }
 
     public String saveDish(Dish dishToSave) {
-        var connection = DBConnection.getDBConnection();
+        var connection = dbConnection.getDBConnection();
         try {
             String isAlreadyInDBQuery = "SELECT name FROM dish WHERE name = ?";
             PreparedStatement isAlreadyInDBPreparedStmt = connection.prepareStatement(isAlreadyInDBQuery);
@@ -193,12 +192,12 @@ public class DataRetriever {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            DBConnection.closeConnection(connection);
+            dbConnection.closeConnection(connection);
         }
     }
 
     public List<Ingredient> findIngredientsByCriteria(String ingredientName, CategoryEnum category, String dishName, int page, int size) {
-        var connection = DBConnection.getDBConnection();
+        var connection = dbConnection.getDBConnection();
         try {
             var query = new StringBuilder("""
             SELECT i.id, i.name, i.price, i.category
@@ -235,7 +234,7 @@ public class DataRetriever {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            DBConnection.closeConnection(connection);
+            dbConnection.closeConnection(connection);
         }
     }
 
