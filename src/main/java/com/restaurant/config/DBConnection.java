@@ -6,27 +6,28 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnection {
-    public Connection getDBConnection() {
-        var dotenv = Dotenv.load();
-
-        String url = dotenv.get("JDBC_URL");
-        String username = dotenv.get("DB_USERNAME");
-        String password = dotenv.get("DB_PASSWORD");
-
+    public Connection getConnection() {
+        Dotenv dotenv = Dotenv.load();
         try {
-            return DriverManager.getConnection(url, username, password);
+            String jdbcURl = dotenv.get("JDBC_URL");
+            String user = dotenv.get("DB_USERNAME");
+            String password = dotenv.get("DB_PASSWORD");
+            if (jdbcURl == null || user == null || password == null) {
+                throw new RuntimeException("Credentials not found !");
+            }
+            return DriverManager.getConnection(jdbcURl, user, password);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void closeConnection(Connection connection) {
-        try {
-            if (connection != null && !connection.isClosed()) {
+        if (connection != null) {
+            try {
                 connection.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 }
