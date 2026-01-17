@@ -3,99 +3,103 @@ package com.restaurant.models;
 import java.util.Objects;
 
 public class Ingredient {
-    private int id;
+    private Integer id;
     private String name;
-    private double price;
     private CategoryEnum category;
+    private Double price;
     private Dish dish;
+    private Double quantity;
 
-    // Constructor
+    public Ingredient(int ingredientId, String ingredientName, double ingredientPrice, CategoryEnum ingredientCategoryType, Dish ingredientDish) {
+    }
+
+    public Double getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Double quantity) {
+        this.quantity = quantity;
+    }
+
     public Ingredient() {
-
     }
 
-    public Ingredient(int id, String name, double price, CategoryEnum category) {
+    public Ingredient(Integer id) {
+        this.id = id;
+    }
+
+    public Ingredient(Integer id, String name, CategoryEnum category, Double price) {
         this.id = id;
         this.name = name;
-        this.price = price;
         this.category = category;
-    }
-
-    public Ingredient(int id, String name, double price, CategoryEnum category, Dish dish) {
-        this.id = id;
-        this.name = name;
         this.price = price;
-        this.category = category;
-        this.dish = dish;
     }
 
-    // Getter
-    public CategoryEnum getCategory() {
-        return category;
+    public String getDishName() {
+        return dish == null ? null : dish.getName();
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
-    public double getPrice() {
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public CategoryEnum getCategory() {
+        return category;
+    }
+
+    public void setCategory(CategoryEnum category) {
+        this.category = category;
+    }
+
+    public Double getPrice() {
         return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
     }
 
     public Dish getDish() {
         return dish;
     }
 
-    // Setter
-    public void setCategory(CategoryEnum category) {
-        this.category = category;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
     public void setDish(Dish dish) {
         this.dish = dish;
     }
 
-    // Equals and hash code
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Ingredient that = (Ingredient) o;
-        return id == that.id && Double.compare(price, that.price) == 0 && Objects.equals(name, that.name) && category == that.category;
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && category == that.category && Objects.equals(price, that.price) && Objects.equals(dish, that.dish);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, price, category);
+        return Objects.hash(id, name, category, price, dish);
     }
 
-    // toString
     @Override
     public String toString() {
         return "Ingredient{" +
-                "category=" + category +
-                ", id=" + id +
+                "id=" + id +
                 ", name='" + name + '\'' +
+                ", category=" + category +
                 ", price=" + price +
+                ", dishName=" + getDishName() +
+                ", quantity=" + quantity +
                 '}';
-    }
-
-    public String getDishName() {
-        return dish.getName();
     }
 }
