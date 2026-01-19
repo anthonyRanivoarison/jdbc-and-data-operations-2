@@ -18,6 +18,11 @@ public class DataRetrieverTest {
         System.out.println("Dish with ID 999");
         System.out.println(dataRetriever.findDishById(999));
 
+        var dish = dataRetriever.findDishById(5);
+        System.out.println(dish);
+        System.out.println("Dish cost: " + dish.getDishCost());
+        System.out.println("Dish gross margin: " + dish.getGrossMargin());
+
         System.out.println("Ingredients on page 2 and size 2:");
         System.out.println(dataRetriever.findIngredients(2, 2));
 
@@ -26,8 +31,8 @@ public class DataRetrieverTest {
 
         System.out.println("Create ingredient");
         var ingredients = List.of(
-                new Ingredient(5, "Fromage", 1200.00, CategoryEnum.DAIRY),
-                new Ingredient(6, "Oignon", 500.00, CategoryEnum.VEGETABLE)
+                new Ingredient(8, "Fromage", 1200.00, CategoryEnum.DAIRY, new Dish()),
+                new Ingredient(9, "Oignon", 500.00, CategoryEnum.VEGETABLE, new Dish())
         );
         System.out.println(dataRetriever.createIngredients(ingredients));
 
@@ -36,8 +41,8 @@ public class DataRetrieverTest {
 
         System.out.println("Save dish");
         var ingredient2 = new Ingredient(6, "Oignon", 3500.00, CategoryEnum.VEGETABLE, new Dish());
-        var dish = new Dish(5, "Soupe de légumes", DishTypeEnum.STARTER, List.of(ingredient2), 2500.00);
-        System.out.println(dataRetriever.saveDish(dish));
+        var dish2 = new Dish(5, "Soupe de légumes", DishTypeEnum.STARTER, List.of(ingredient2));
+        System.out.println(dataRetriever.saveDish(dish2));
 
         System.out.println("Find ingredients by criteria");
         System.out.println(dataRetriever.findIngredientsByCriteria("cho", null, "sal", 1, 10));
