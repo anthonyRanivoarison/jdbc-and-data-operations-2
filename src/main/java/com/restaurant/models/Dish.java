@@ -19,15 +19,19 @@ public class Dish {
     }
 
     public Double getDishCost() {
-        double totalPrice = 0;
-        for (Ingredient ingredient : ingredients) {
-            Double quantity = ingredient.getQuantity();
-            if (quantity == null) {
-                throw new RuntimeException("...");
-            }
-            totalPrice = totalPrice + ingredient.getPrice() * quantity;
+        if (ingredients == null || ingredients.isEmpty()) {
+            return 0.0;
         }
-        return totalPrice;
+
+        return ingredients.stream()
+                .mapToDouble(ingredient -> {
+                    double pricePerUnit = ingredient.getPrice();
+                    double quantity = ingredient.getQuantity() != null
+                            ? ingredient.getQuantity()
+                            : 1.0;
+                    return pricePerUnit * quantity;
+                })
+                .sum();
     }
 
     public Dish() {
