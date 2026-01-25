@@ -2,6 +2,7 @@ package com.restaurant.models;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class Dish {
     private Integer id;
@@ -25,13 +26,10 @@ public class Dish {
 
         return ingredients.stream()
                 .mapToDouble(ingredient -> {
-                    double pricePerUnit = ingredient.getPrice();
-                    double quantity = ingredient.getQuantity() != null
-                            ? ingredient.getQuantity()
-                            : 1.0;
-                    return pricePerUnit * quantity;
-                })
-                .sum();
+                    return ingredient.getStockMovementList().stream()
+                    .map(stockMovement ->
+                            stockMovement.getStockValue().getQuantity() * ingredient.getPrice()).count();
+        }).sum();
     }
 
     public Dish() {

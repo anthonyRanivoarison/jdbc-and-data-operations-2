@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="DataSourcePerFileMappings">
-    <file url="file://$PROJECT_DIR$/.idea/queries/Query.sql" value="b247a6bf-bd0a-4965-860d-0a125bc1419e" />
-    <file url="file://$PROJECT_DIR$/src/main/java/com/restaurant/database/data.sql" value="b247a6bf-bd0a-4965-860d-0a125bc1419e" />
-    <file url="file://$PROJECT_DIR$/src/main/java/com/restaurant/database/migrations/migration.sql" value="b247a6bf-bd0a-4965-860d-0a125bc1419e" />
-    <file url="file://$PROJECT_DIR$/src/main/java/com/restaurant/database/schema.sql" value="b247a6bf-bd0a-4965-860d-0a125bc1419e" />
-  </component>
-</project>

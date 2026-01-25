@@ -1,45 +1,49 @@
 package com.restaurant.models;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 
 public class Ingredient {
     private Integer id;
     private String name;
-    private CategoryEnum category;
     private Double price;
+    private CategoryEnum category;
+    private List<StockMovement> stockMovementList;
     private Dish dish;
-    private Double quantity;
-    private UnitEnum unit;
 
-    public Ingredient(int ingredientId, String ingredientName, double ingredientPrice, CategoryEnum ingredientCategoryType, Dish ingredientDish) {
+    public Ingredient() {}
+
+    public Dish getDish() {
+        return dish;
     }
 
-    public Double getQuantity() {
-        return quantity;
+    public void setDish(Dish dish) {
+        this.dish = dish;
     }
 
-    public void setQuantity(Double quantity) {
-        this.quantity = quantity;
-    }
-
-    public Ingredient() {
-    }
-
-    public Ingredient(Integer id) {
-        this.id = id;
-    }
-
-    public Ingredient(Integer id, String name, CategoryEnum category, Double price, Double quantity, UnitEnum unit) {
+    public Ingredient(CategoryEnum category, Integer id, String name, Double price, List<StockMovement> stockMovementList) {
+        this.category = category;
         this.id = id;
         this.name = name;
-        this.category = category;
         this.price = price;
-        this.quantity = quantity;
-        this.unit = unit;
+        this.stockMovementList = stockMovementList;
     }
 
-    public String getDishName() {
-        return dish == null ? null : dish.getName();
+    public Ingredient(CategoryEnum category, Dish dish, Integer id, String name, Double price) {
+        this.category = category;
+        this.dish = dish;
+        this.id = id;
+        this.name = name;
+        this.price = price;
+    }
+
+    public CategoryEnum getCategory() {
+        return category;
+    }
+
+    public void setCategory(CategoryEnum category) {
+        this.category = category;
     }
 
     public Integer getId() {
@@ -58,12 +62,16 @@ public class Ingredient {
         this.name = name;
     }
 
-    public CategoryEnum getCategory() {
-        return category;
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Ingredient that = (Ingredient) o;
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(price, that.price) && category == that.category && Objects.equals(stockMovementList, that.stockMovementList);
     }
 
-    public void setCategory(CategoryEnum category) {
-        this.category = category;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, price, category, stockMovementList);
     }
 
     public Double getPrice() {
@@ -74,43 +82,34 @@ public class Ingredient {
         this.price = price;
     }
 
-    public Dish getDish() {
-        return dish;
+    public List<StockMovement> getStockMovementList() {
+        return stockMovementList;
     }
 
-    public void setDish(Dish dish) {
-        this.dish = dish;
-    }
-
-    public UnitEnum getUnit() {
-        return unit;
-    }
-
-    public void setUnit(UnitEnum unit) {
-        this.unit = unit;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Ingredient that = (Ingredient) o;
-        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && category == that.category && Objects.equals(price, that.price) && Objects.equals(dish, that.dish);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, category, price, dish);
+    public void setStockMovementList(List<StockMovement> stockMovementList) {
+        this.stockMovementList = stockMovementList;
     }
 
     @Override
     public String toString() {
         return "Ingredient{" +
-                "id=" + id +
+                "category=" + category +
+                ", id=" + id +
                 ", name='" + name + '\'' +
-                ", category=" + category +
                 ", price=" + price +
-                ", dishName=" + getDishName() +
-                ", quantity=" + quantity +
+                ", stockMovementList=" + stockMovementList +
                 '}';
+    }
+
+    public StockValue getStockValueAt(Instant now) {
+        var stockValue = new StockValue();
+        for (StockMovement movement : stockMovementList) {
+            if (movement.getCreationDatetime().isAfter(now)) {
+                continue;
+            }
+            stockValue.setQuantity(movement.getStockValue().getQuantity());
+            stockValue.setUnit(movement.getStockValue().getUnit());
+        }
+        return stockValue;
     }
 }
