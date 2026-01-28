@@ -74,10 +74,21 @@ public class Order {
     }
 
     public Double getTotalAmountWithoutVAT() {
-        throw new RuntimeException("Not implemented yet");
+        return dishOrders != null ? dishOrders.stream()
+                .mapToDouble(dishOrder -> {
+                    Dish dish = dishOrder.getDish();
+                    if (dish == null || dish.getPrice() == null) {
+                        return 0.0;
+                    }
+                    return dish.getPrice() * dishOrder.getQuantity();
+                })
+                .sum() : 0.0;
     }
 
+
     public Double getTotalAmountWithVAT() {
-        throw new RuntimeException("Not implemented yet");
+        double vatRate = 0.20;
+        double totalWithoutVAT = getTotalAmountWithoutVAT();
+        return totalWithoutVAT * (1 + vatRate);
     }
 }
