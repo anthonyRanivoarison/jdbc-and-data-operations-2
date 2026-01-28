@@ -67,7 +67,7 @@ public class DataRetriever {
 
     public List<DishOrder> findDishesOrderByOrderId(Integer orderId) {
         DBConnection dbConnection = new DBConnection();
-        String query = "SELECT id, id_order, id_dish, quantity FROM DishOrder ON WHERE id_order = ?";
+        String query = "SELECT id, id_order, id_dish, quantity FROM DishOrder WHERE id_order = ?";
         try (Connection conn = dbConnection.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setInt(1, orderId);
@@ -88,7 +88,7 @@ public class DataRetriever {
 
     public Order findOrderById(Integer orderId) {
         DBConnection dbConnection = new DBConnection();
-        String query = "SELECT id, reference, creation_datetime FROM \"Order\" WHERE id = ?";
+        String query = "SELECT id, reference, creation_datetime FROM orders WHERE id = ?";
         try (Connection conn = dbConnection.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setInt(1, orderId);
@@ -503,27 +503,52 @@ public class DataRetriever {
         }
     }
 
+    private void updateDishOrders(Connection conn, Integer orderId, List<DishOrder> dishOrders)
+            throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement("DELETE FROM dishOrder WHERE id_order = ?")) {
+            ps.setInt(1, orderId);
+            ps.executeUpdate();
+        }
+
+        if (dishOrders != null && !dishOrders.isEmpty()) {
+            try (PreparedStatement ps = conn.prepareStatement("INSERT INTO dishOrder (id, id_order, id_dish, quantity) VALUES (?, ?, ?, ?)")) {
+                for (DishOrder dishOrder : dishOrders) {
+                    Integer dishOrderId = dishOrder.getId() != null
+                            ? dishOrder.getId()
+                            : getNextSerialValue(conn, "dish_order", "id");
+
+                    ps.setInt(1, dishOrderId);
+                    ps.setInt(2, orderId);
+                    ps.setInt(3, dishOrder.getDish().getId());
+                    ps.setInt(4, dishOrder.getQuantity());
+
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
+        }
+    }
+
+
     public Order saveOrder(Order orderToSave) {
         DBConnection dbConnection = new DBConnection();
         try (Connection conn = dbConnection.getConnection()) {
-            conn.setAutoCommit(false);
             String upsertOrderQuery = """
-                INSERT INTO "Order" (id, reference, creation_datetime) VALUES (?, ?, ?)
+                INSERT INTO orders (id, reference) VALUES (?, ?)
                 ON CONFLICT (id) DO UPDATE
-                SET id = EXCLUDED.id, reference = EXCLUDED.reference, creation_datetime = EXCLUDED.creation_datetime
+                SET id = EXCLUDED.id, reference = EXCLUDED.reference
                 RETURNING id
                 """;
             try (PreparedStatement ps = conn.prepareStatement(upsertOrderQuery)) {
                 if (orderToSave.getId() != null) {
                     ps.setInt(1, orderToSave.getId());
                 } else {
-                    ps.setInt(1, getNextSerialValue(conn, "order", "id"));
+                    ps.setInt(1, getNextSerialValue(conn, "orders", "id"));
                 }
                 ps.setString(2, orderToSave.getReference());
-                ps.setString(3, orderToSave.getCreationDatetime().toString());
                 ResultSet rs = ps.executeQuery();
                 rs.next();
-                conn.setAutoCommit(true);
+                updateDishOrders(conn, rs.getInt(1), orderToSave.getDishOrders());
                 return findOrderById(orderToSave.getId());
             }
         } catch (SQLException e) {
@@ -533,10 +558,10 @@ public class DataRetriever {
 
     public Order findOrderByReference(String reference) {
         DBConnection dbConnection = new DBConnection();
-        String query = "SELECT id, reference, creation_datetime FROM \"Order\" WHERE reference = ?";
+        String query = "SELECT id, reference, creation_datetime FROM orders WHERE reference ILIKE ?";
         try (Connection conn = dbConnection.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(query);
-            ps.setString(1, reference);
+            ps.setString(1, "%" + reference + "%");
             ResultSet resultSet = ps.executeQuery();
             Order order = null;
             if (resultSet.next()) {
