@@ -7,12 +7,12 @@ public class DishOrder {
     private Dish dish;
     private Integer quantity;
 
-    public DishOrder() {}
+    public Integer getId() {
+        return id;
+    }
 
-    public DishOrder(Dish dish, Integer id, Integer quantity) {
-        this.dish = dish;
+    public void setId(Integer id) {
         this.id = id;
-        this.quantity = quantity;
     }
 
     public Dish getDish() {
@@ -23,14 +23,6 @@ public class DishOrder {
         this.dish = dish;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
     public Integer getQuantity() {
         return quantity;
     }
@@ -39,10 +31,10 @@ public class DishOrder {
         this.quantity = quantity;
     }
 
+
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        DishOrder dishOrder = (DishOrder) o;
+        if (!(o instanceof DishOrder dishOrder)) return false;
         return Objects.equals(id, dishOrder.id) && Objects.equals(dish, dishOrder.dish) && Objects.equals(quantity, dishOrder.quantity);
     }
 
@@ -54,8 +46,8 @@ public class DishOrder {
     @Override
     public String toString() {
         return "DishOrder{" +
-                "dish=" + dish +
-                ", id=" + id +
+                "id=" + id +
+                ", dish=" + dish +
                 ", quantity=" + quantity +
                 '}';
     }

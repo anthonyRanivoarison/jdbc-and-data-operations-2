@@ -2,5 +2,7 @@
 <project version="4">
   <component name="DataSourcePerFileMappings">
     <file url="file://$PROJECT_DIR$/src/main/java/com/restaurant/database/migrations/migrations3.sql" value="b247a6bf-bd0a-4965-860d-0a125bc1419e" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/restaurant/database/migrations/migrations4.sql" value="b247a6bf-bd0a-4965-860d-0a125bc1419e" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/restaurant/database/new_schema.sql" value="b247a6bf-bd0a-4965-860d-0a125bc1419e" />
   </component>
 </project>

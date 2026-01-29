@@ -107,8 +107,8 @@ public class Ingredient {
             if (movement.getCreationDatetime().isAfter(now)) {
                 continue;
             }
-            stockValue.setQuantity(movement.getStockValue().getQuantity());
-            stockValue.setUnit(movement.getStockValue().getUnit());
+            stockValue.setQuantity(movement.getValue().getQuantity());
+            stockValue.setUnit(movement.getValue().getUnit());
         }
         return stockValue;
     }

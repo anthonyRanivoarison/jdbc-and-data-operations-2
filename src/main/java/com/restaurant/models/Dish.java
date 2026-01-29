@@ -4,12 +4,35 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 public class Dish {
     private Integer id;
     private Double price;
     private String name;
     private DishTypeEnum dishType;
-    private List<Ingredient> ingredients;
+    private List<DishIngredient> dishIngredients;
+
+    public Dish() {
+    }
+
+    public List<DishIngredient> getDishIngredients() {
+        return dishIngredients;
+    }
+
+    public void setDishIngredients(List<DishIngredient> dishIngredients) {
+        if (dishIngredients == null) {
+            this.dishIngredients = new ArrayList<>();
+            return;
+        }
+        for (DishIngredient ingredient : dishIngredients) {
+            ingredient.setDish(this);
+        }
+        this.dishIngredients = dishIngredients;
+    }
+
 
     public Double getPrice() {
         return price;
@@ -20,35 +43,16 @@ public class Dish {
     }
 
     public Double getDishCost() {
-        if (ingredients == null || ingredients.isEmpty()) {
-            return 0.0;
+        double totalPrice = 0;
+        for (DishIngredient dishIngredient : dishIngredients) {
+            Double quantity = dishIngredient.getQuantity();
+            if (quantity == null) {
+                throw new RuntimeException("Some ingredients have undefined quantity");
+            }
+            totalPrice = totalPrice + dishIngredient.getIngredient().getPrice() * quantity;
         }
-
-        return ingredients.stream()
-                .mapToDouble(ingredient -> {
-                    return ingredient.getStockMovementList().stream()
-                    .map(stockMovement ->
-                            stockMovement.getStockValue().getQuantity() * ingredient.getPrice()).count();
-        }).sum();
+        return totalPrice;
     }
-
-    public Dish() {
-    }
-
-    public Dish(Integer id, String name, DishTypeEnum type, Double price) {
-        this.id = id;
-        this.name = name;
-        this.dishType = type;
-        this.price = price;
-    }
-
-    public Dish(Integer id, String name, DishTypeEnum dishType, List<Ingredient> ingredients) {
-        this.id = id;
-        this.name = name;
-        this.dishType = dishType;
-        this.ingredients = ingredients;
-    }
-
 
     public Integer getId() {
         return id;
@@ -74,31 +78,16 @@ public class Dish {
         this.dishType = dishType;
     }
 
-    public List<Ingredient> getIngredients() {
-        return ingredients;
-    }
-
-    public void setIngredients(List<Ingredient> ingredients) {
-        if (ingredients == null) {
-            this.ingredients = null;
-            return;
-        }
-        for (int i = 0; i < ingredients.size(); i++) {
-            ingredients.get(i).setDish(this);
-        }
-        this.ingredients = ingredients;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Dish dish = (Dish) o;
-        return Objects.equals(id, dish.id) && Objects.equals(name, dish.name) && dishType == dish.dishType && Objects.equals(ingredients, dish.ingredients);
+        return Objects.equals(id, dish.id) && Objects.equals(name, dish.name) && dishType == dish.dishType && Objects.equals(dishIngredients, dish.dishIngredients);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, dishType, ingredients);
+        return Objects.hash(id, name, dishType, dishIngredients);
     }
 
     @Override
@@ -108,7 +97,9 @@ public class Dish {
                 ", price=" + price +
                 ", name='" + name + '\'' +
                 ", dishType=" + dishType +
-                ", ingredients=" + ingredients +
+                ", cost=" + getDishCost() +
+                ", grossMargin=" + getGrossMargin() +
+                ", ingredients=" + dishIngredients +
                 '}';
     }
 

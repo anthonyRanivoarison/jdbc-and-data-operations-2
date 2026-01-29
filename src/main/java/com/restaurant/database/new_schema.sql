@@ -22,3 +22,5 @@ update "dish" set price = 12000.00 where id = 2;
 update "dish" set price = null where id = 3;
 update "dish" set price = 8000.00 where id = 4;
 update "dish" set price = null where id = 5;
+
+select * from orders;
