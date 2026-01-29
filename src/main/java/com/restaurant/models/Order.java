@@ -13,13 +13,19 @@ public class Order {
     private String reference;
     private Instant creationDatetime;
     private List<DishOrder> dishOrderList;
+    private TableOrder table;
+
+    public Order() {}
+
+    public Order(Instant creationDatetime, List<DishOrder> dishOrderList, String reference, Integer id, TableOrder table) {
+        this.creationDatetime = creationDatetime;
+        this.dishOrderList = dishOrderList;
+        this.id = id;
+        this.reference = reference;
+    }
 
     public Integer getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public String getReference() {
@@ -32,6 +38,18 @@ public class Order {
 
     public Instant getCreationDatetime() {
         return creationDatetime;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public TableOrder getTable() {
+        return table;
+    }
+
+    public void setTable(TableOrder table) {
+        this.table = table;
     }
 
     public void setCreationDatetime(Instant creationDatetime) {
@@ -56,12 +74,21 @@ public class Order {
                 '}';
     }
 
-    Double getTotalAmountWithoutVat() {
-        throw new RuntimeException("Not implemented");
+    public Double getTotalAmountWithoutVAT() {
+        return dishOrderList != null ? dishOrderList.stream()
+            .mapToDouble(dishOrder -> {
+                Dish dish = dishOrder.getDish();
+                if (dish == null || dish.getPrice() == null) {
+                 return 0.0;
+                }
+                return dish.getPrice() * dishOrder.getQuantity();}).sum() : 0.0;
     }
 
-    Double getTotalAmountWithVat() {
-        throw new RuntimeException("Not implemented");
+
+    public Double getTotalAmountWithVAT() {
+        double vatRate = 0.20;
+        double totalWithoutVAT = getTotalAmountWithoutVAT();
+        return totalWithoutVAT * (1 + vatRate);
     }
 
 
